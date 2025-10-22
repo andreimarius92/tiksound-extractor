@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://tiksound-extractor.vercel.app', 'https://tiksound-extractor-frontend.vercel.app'],
+  origin: true, // Accept all origins for now
   credentials: true
 }));
 app.use(express.json());
