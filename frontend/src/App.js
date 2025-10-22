@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://tiksound-extractor-1.onrender.com';
 
 function App() {
   const [url, setUrl] = useState('');
@@ -33,18 +33,27 @@ function App() {
     setResult(null);
 
     try {
+      console.log('Sending request to:', `${API_BASE_URL}/extract`);
+      console.log('Request data:', { url: url.trim() });
+      
       const response = await axios.post(`${API_BASE_URL}/extract`, {
         url: url.trim()
       });
 
+      console.log('Response received:', response.data);
       setResult(response.data);
     } catch (err) {
+      console.error('Request failed:', err);
+      console.error('Error response:', err.response);
+      
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.response?.status === 429) {
         setError('Too many requests. Please wait 10 seconds before trying again.');
+      } else if (err.code === 'NETWORK_ERROR' || err.message.includes('Network Error')) {
+        setError('Network error. Please check your connection and try again.');
       } else {
-        setError('Something went wrong. Please try again.');
+        setError(`Something went wrong. Please try again. Error: ${err.message}`);
       }
     } finally {
       setLoading(false);
