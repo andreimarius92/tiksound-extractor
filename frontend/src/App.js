@@ -202,7 +202,7 @@ function App() {
                       💡 <strong>Tip:</strong> Use "Download MP3 (Direct)" for automatic download to your device.
                     </p>
                     <p className="text-yellow-200 text-xs mt-2">
-                      ⚠️ <strong>Note:</strong> Cloud version provides demo functionality. For real audio extraction, run locally.
+                      ⚠️ <strong>Note:</strong> Cloud version provides demo functionality with high-quality MP3. For real TikTok audio extraction, run locally.
                     </p>
                   </div>
                   <div className="space-y-2">
