@@ -87,6 +87,10 @@ function App() {
           link.download = `tiktok_sound_${Date.now()}.mp3`;
           link.style.display = 'none';
           
+          // Force download by setting attributes
+          link.setAttribute('download', `tiktok_sound_${Date.now()}.mp3`);
+          link.setAttribute('type', 'audio/mpeg');
+          
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -97,7 +101,13 @@ function App() {
         .catch(error => {
           console.error('Download failed:', error);
           // Fallback to direct link
-          window.open(result.downloadUrl, '_blank');
+          const link = document.createElement('a');
+          link.href = result.downloadUrl;
+          link.download = `tiktok_sound_${Date.now()}.mp3`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         });
     }
   };
@@ -187,6 +197,12 @@ function App() {
                   <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3 mb-4">
                     <p className="text-blue-200 text-xs">
                       📱 <strong>Mobile users:</strong> Tap "Open Download Link" and then tap the download button in your browser.
+                    </p>
+                    <p className="text-green-200 text-xs mt-2">
+                      💡 <strong>Tip:</strong> Use "Download MP3 (Direct)" for automatic download to your device.
+                    </p>
+                    <p className="text-yellow-200 text-xs mt-2">
+                      ⚠️ <strong>Note:</strong> Cloud version provides demo functionality. For real audio extraction, run locally.
                     </p>
                   </div>
                   <div className="space-y-2">
