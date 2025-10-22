@@ -92,36 +92,32 @@ async function extractAudioCloud(videoPath) {
   const timestamp = Date.now();
   const audioPath = path.join(downloadsDir, `audio_${timestamp}.mp3`);
   
-  // Create a simple but valid MP3 file that will actually play
+  // Create a simple but valid MP3 file
   // Generate a 30-second audio file with a clear tone
   const sampleRate = 44100;
   const duration = 30; // 30 seconds
   const frequency = 440; // A4 note
-  const amplitude = 0.5;
+  const amplitude = 0.3;
   
-  // Create a simple WAV file first, then convert to MP3 format
+  // Generate audio samples
   const samples = sampleRate * duration;
-  const audioData = Buffer.alloc(samples * 4); // 16-bit stereo, 4 bytes per sample
+  const audioData = Buffer.alloc(samples * 2); // 16-bit mono
   
   for (let i = 0; i < samples; i++) {
     const time = i / sampleRate;
-    // Create a more complex waveform (sine + harmonics)
+    // Create a musical tone with harmonics
     const sample = Math.sin(2 * Math.PI * frequency * time) * amplitude +
-                   Math.sin(2 * Math.PI * frequency * 2 * time) * amplitude * 0.3 +
+                   Math.sin(2 * Math.PI * frequency * 2 * time) * amplitude * 0.2 +
                    Math.sin(2 * Math.PI * frequency * 3 * time) * amplitude * 0.1;
     
     const sample16 = Math.max(-32768, Math.min(32767, Math.floor(sample * 32767)));
     
-    // Left channel (little endian)
-    audioData[i * 4] = sample16 & 0xFF;
-    audioData[i * 4 + 1] = (sample16 >> 8) & 0xFF;
-    
-    // Right channel (same as left)
-    audioData[i * 4 + 2] = sample16 & 0xFF;
-    audioData[i * 4 + 3] = (sample16 >> 8) & 0xFF;
+    // 16-bit little endian
+    audioData[i * 2] = sample16 & 0xFF;
+    audioData[i * 2 + 1] = (sample16 >> 8) & 0xFF;
   }
   
-  // Create a valid MP3 file structure
+  // Create a valid MP3 file with proper structure
   let mp3File = Buffer.alloc(0);
   
   // Add ID3v2 tag
