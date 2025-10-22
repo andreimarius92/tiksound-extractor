@@ -1,0 +1,26 @@
+{
+  "name": "tiksound-extractor-backend",
+  "version": "1.0.0",
+  "description": "Backend for TikTok sound extractor",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "yt-dlp-wrap": "^2.0.0",
+    "fs-extra": "^11.1.1",
+    "path": "^0.12.7",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": ["tiktok", "audio", "extractor"],
+  "author": "",
+  "license": "MIT"
+}
