@@ -9,7 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://tiksound-extractor.vercel.app', 'https://tiksound-extractor-frontend.vercel.app'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Rate limiting: 1 request per 10 seconds per IP
@@ -71,9 +74,11 @@ async function extractAudio(videoPath) {
 // Main extraction endpoint
 app.post('/extract', limiter, async (req, res) => {
   try {
+    console.log('Received request:', req.body);
     const { url } = req.body;
 
     if (!url || !isValidTikTokUrl(url)) {
+      console.log('Invalid URL:', url);
       return res.status(400).json({
         status: 'error',
         message: 'Invalid TikTok URL. Please provide a valid TikTok link.'
@@ -143,6 +148,16 @@ app.get('/', (req, res) => {
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'TikSound Extractor Backend is running (Cloud Mode)' });
+});
+
+// Debug endpoint
+app.get('/debug', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Debug endpoint working',
+    timestamp: new Date().toISOString(),
+    headers: req.headers
+  });
 });
 
 // Serve static files
