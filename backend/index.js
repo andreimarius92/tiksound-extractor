@@ -12,7 +12,14 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://tiksound-extractor.vercel.app',
+    'https://tiksound-extractor-frontend.vercel.app'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Serve static files with proper headers for downloads
@@ -353,7 +360,8 @@ app.post('/extract', limiter, async (req, res) => {
     
     // Step 4: Generate download URL
     const fileName = path.basename(audioPath);
-    const downloadUrl = `${req.protocol}://${req.get('host')}/download/${fileName}`;
+    const protocol = req.get('host')?.includes('onrender.com') ? 'https' : req.protocol;
+    const downloadUrl = `${protocol}://${req.get('host')}/download/${fileName}`;
 
     // Clean up video file
     fs.unlinkSync(videoPath);
@@ -379,8 +387,13 @@ app.get('/download/:filename', (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(downloadsDir, filename);
   
+  console.log('Download request for:', filename);
+  console.log('File path:', filePath);
+  console.log('File exists:', fs.existsSync(filePath));
+  
   // Check if file exists
   if (!fs.existsSync(filePath)) {
+    console.log('File not found:', filePath);
     return res.status(404).json({ error: 'File not found' });
   }
   
@@ -388,6 +401,7 @@ app.get('/download/:filename', (req, res) => {
   res.setHeader('Content-Type', 'audio/mpeg');
   res.setHeader('Content-Disposition', `attachment; filename="tiktok_sound_${Date.now()}.mp3"`);
   res.setHeader('Cache-Control', 'public, max-age=600');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   
   // Send file
   res.sendFile(filePath);
