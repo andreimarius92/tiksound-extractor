@@ -144,6 +144,24 @@ app.get('/download/:filename', (req, res) => {
   res.sendFile(filePath);
 });
 
+// Root endpoint - Landing page
+app.get('/', (req, res) => {
+  res.json({
+    message: '🎵 TikSound Extractor Backend API',
+    status: 'running',
+    mode: 'cloud',
+    endpoints: {
+      health: '/health',
+      extract: 'POST /extract',
+      download: 'GET /download/:filename'
+    },
+    usage: {
+      extract: 'POST /extract with {"url": "tiktok_url"}',
+      download: 'GET /download/filename.mp3'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'TikSound Extractor Backend is running (Cloud Mode)' });
