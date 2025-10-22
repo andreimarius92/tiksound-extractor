@@ -122,28 +122,6 @@ app.post('/extract', limiter, async (req, res) => {
   }
 });
 
-// Serve static files
-app.use(express.static('downloads'));
-
-// Download endpoint with friendly filename
-app.get('/download/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(downloadsDir, filename);
-  
-  // Check if file exists
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: 'File not found' });
-  }
-  
-  // Set headers for download
-  res.setHeader('Content-Type', 'audio/mpeg');
-  res.setHeader('Content-Disposition', `attachment; filename="tiktok_sound_${Date.now()}.mp3"`);
-  res.setHeader('Cache-Control', 'public, max-age=600');
-  
-  // Send file
-  res.sendFile(filePath);
-});
-
 // Root endpoint - Landing page
 app.get('/', (req, res) => {
   res.json({
@@ -165,6 +143,28 @@ app.get('/', (req, res) => {
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'TikSound Extractor Backend is running (Cloud Mode)' });
+});
+
+// Serve static files
+app.use(express.static('downloads'));
+
+// Download endpoint with friendly filename
+app.get('/download/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(downloadsDir, filename);
+  
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+  
+  // Set headers for download
+  res.setHeader('Content-Type', 'audio/mpeg');
+  res.setHeader('Content-Disposition', `attachment; filename="tiktok_sound_${Date.now()}.mp3"`);
+  res.setHeader('Cache-Control', 'public, max-age=600');
+  
+  // Send file
+  res.sendFile(filePath);
 });
 
 app.listen(PORT, () => {
