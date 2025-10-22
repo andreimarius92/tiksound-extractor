@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
+const { spawn } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -34,49 +35,166 @@ function isValidTikTokUrl(url) {
   return tiktokRegex.test(url);
 }
 
-// Mock function for cloud deployment
+// Real function to check original sound
 async function checkOriginalSound(url) {
-  // For cloud deployment, we'll simulate the check
-  // In a real implementation, you'd use a different approach
-  return {
-    originalSound: true, // Assume original sound for demo
-    metadata: {
-      title: 'TikTok Video',
-      duration: 30
-    }
-  };
+  return new Promise((resolve, reject) => {
+    
+    console.log('Checking original sound for:', url);
+    
+    const ytdlp = spawn('yt-dlp', [
+      '--dump-json',
+      '--no-download',
+      url
+    ]);
+
+    let output = '';
+    let errorOutput = '';
+
+    ytdlp.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+
+    ytdlp.stderr.on('data', (data) => {
+      const output = data.toString();
+      console.log('yt-dlp output:', output);
+      errorOutput += output;
+    });
+
+    ytdlp.on('close', (code) => {
+      if (code !== 0) {
+        console.error('yt-dlp error:', errorOutput);
+        reject(new Error(`Failed to run yt-dlp. Make sure it is installed.`));
+        return;
+      }
+
+      try {
+        const metadata = JSON.parse(output);
+        console.log('Video metadata:', metadata);
+        
+        // Check if video has original sound (not overlayed)
+        const hasOriginalSound = !metadata.title?.includes('original sound') || 
+                                metadata.description?.includes('original sound');
+        
+        resolve({
+          originalSound: hasOriginalSound,
+          metadata: {
+            title: metadata.title || 'TikTok Video',
+            duration: metadata.duration || 30,
+            uploader: metadata.uploader || 'Unknown'
+          }
+        });
+      } catch (error) {
+        console.error('Error parsing metadata:', error);
+        reject(new Error('Failed to parse video metadata'));
+      }
+    });
+
+    ytdlp.on('error', (error) => {
+      console.error('yt-dlp spawn error:', error);
+      reject(new Error(`Failed to run yt-dlp: ${error.message}`));
+    });
+  });
 }
 
-// Mock function for cloud deployment
+// Real function to download video
 async function downloadVideo(url) {
-  // For cloud deployment, create a mock video file
-  const timestamp = Date.now();
-  const videoPath = path.join(downloadsDir, `video_${timestamp}.mp4`);
-  
-  // Create a small mock video file (1KB)
-  fs.writeFileSync(videoPath, Buffer.alloc(1024));
-  
-  return videoPath;
+  return new Promise((resolve, reject) => {
+    
+    const timestamp = Date.now();
+    const videoPath = path.join(downloadsDir, `video_${timestamp}.mp4`);
+    
+    console.log('Downloading video:', url);
+    console.log('Output path:', videoPath);
+    
+    const ytdlp = spawn('yt-dlp', [
+      '-o', videoPath,
+      '--format', 'best[height<=720]',
+      '--no-playlist',
+      url
+    ]);
+
+    let errorOutput = '';
+
+    ytdlp.stderr.on('data', (data) => {
+      const output = data.toString();
+      console.log('yt-dlp output:', output);
+      errorOutput += output;
+    });
+
+    ytdlp.on('close', (code) => {
+      if (code !== 0) {
+        console.error('yt-dlp error:', errorOutput);
+        reject(new Error(`Video download failed: ${errorOutput}`));
+        return;
+      }
+
+      console.log('Video downloaded:', videoPath);
+      resolve(videoPath);
+    });
+
+    ytdlp.on('error', (error) => {
+      console.error('yt-dlp spawn error:', error);
+      reject(new Error(`Failed to run yt-dlp: ${error.message}`));
+    });
+  });
 }
 
-// Mock function for cloud deployment
+// Real function to extract audio
 async function extractAudio(videoPath) {
-  // For cloud deployment, create a mock audio file
-  const timestamp = Date.now();
-  const audioPath = path.join(downloadsDir, `audio_${timestamp}.mp3`);
-  
-  // Create a minimal MP3 file with proper headers
-  const mp3Header = Buffer.from([
-    0xFF, 0xFB, 0x90, 0x00, // MP3 frame header
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Some data
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-  ]);
-  
-  fs.writeFileSync(audioPath, mp3Header);
-  
-  return audioPath;
+  return new Promise((resolve, reject) => {
+    
+    const timestamp = Date.now();
+    const audioPath = path.join(downloadsDir, `audio_${timestamp}.mp3`);
+    
+    console.log('Extracting audio from:', videoPath);
+    console.log('Output path:', audioPath);
+    
+    const ffmpeg = spawn('ffmpeg', [
+      '-i', videoPath,
+      '-acodec', 'mp3',
+      '-ab', '128k',
+      '-ac', '2',
+      '-ar', '44100',
+      '-y', // Overwrite output file
+      audioPath
+    ]);
+
+    let errorOutput = '';
+
+    ffmpeg.stderr.on('data', (data) => {
+      const output = data.toString();
+      console.log('FFmpeg output:', output);
+      errorOutput += output;
+    });
+
+    ffmpeg.on('close', (code) => {
+      if (code !== 0) {
+        console.error('FFmpeg error:', errorOutput);
+        reject(new Error(`Audio extraction failed with code ${code}: ${errorOutput}`));
+        return;
+      }
+
+      console.log('Audio extraction completed:', audioPath);
+      
+      // Verify the file was created and has content
+      fs.stat(audioPath)
+        .then(stats => {
+          if (stats.size > 0) {
+            resolve(audioPath);
+          } else {
+            reject(new Error('Extracted audio file is empty'));
+          }
+        })
+        .catch(error => {
+          reject(new Error(`Failed to verify extracted audio: ${error.message}`));
+        });
+    });
+
+    ffmpeg.on('error', (error) => {
+      console.error('FFmpeg spawn error:', error);
+      reject(new Error(`Failed to run FFmpeg: ${error.message}`));
+    });
+  });
 }
 
 // Main extraction endpoint

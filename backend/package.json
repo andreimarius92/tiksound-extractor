@@ -4,7 +4,7 @@
   "description": "Backend for TikTok sound extractor",
   "main": "index.js",
   "scripts": {
-    "start": "node index-cloud.js",
+    "start": "node index.js",
     "dev": "nodemon index.js",
     "build": "npm install && pip3 install -r requirements.txt",
     "postinstall": "pip3 install -r requirements.txt"
