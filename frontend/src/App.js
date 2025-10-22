@@ -33,10 +33,10 @@ function App() {
     setResult(null);
 
     try {
-      console.log('Sending request to:', `${API_BASE_URL}/extract`);
+      console.log('Sending request to:', `${API_BASE_URL.replace(/\/$/, '')}/extract`);
       console.log('Request data:', { url: url.trim() });
       
-      const response = await axios.post(`${API_BASE_URL}/extract`, {
+      const response = await axios.post(`${API_BASE_URL.replace(/\/$/, '')}/extract`, {
         url: url.trim()
       });
 
