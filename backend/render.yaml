@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: tiksound-backend
+    env: node
+    buildCommand: |
+      npm install
+      pip3 install -r requirements.txt
+      apt-get update && apt-get install -y ffmpeg
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000

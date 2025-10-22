@@ -4,23 +4,34 @@
   "description": "Backend for TikTok sound extractor",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node index-cloud.js",
+    "dev": "nodemon index.js",
+    "build": "npm install && pip3 install -r requirements.txt",
+    "postinstall": "pip3 install -r requirements.txt"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "axios": "^1.12.2",
     "cors": "^2.8.5",
-    "multer": "^1.4.5-lts.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
     "fluent-ffmpeg": "^2.1.2",
-    "yt-dlp-wrap": "^2.0.0",
     "fs-extra": "^11.1.1",
+    "multer": "^1.4.5-lts.1",
     "path": "^0.12.7",
-    "express-rate-limit": "^7.1.5"
+    "yt-dlp-wrap": "^2.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
   },
-  "keywords": ["tiktok", "audio", "extractor"],
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.8.0"
+  },
+  "keywords": [
+    "tiktok",
+    "audio",
+    "extractor"
+  ],
   "author": "",
   "license": "MIT"
 }
