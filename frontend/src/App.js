@@ -62,19 +62,43 @@ function App() {
 
   const handleDownload = () => {
     if (result?.downloadUrl) {
-      // Create a temporary link element for better download handling
+      // Force download by creating a link with download attribute
       const link = document.createElement('a');
       link.href = result.downloadUrl;
       link.download = `tiktok_sound_${Date.now()}.mp3`;
-      link.target = '_blank';
+      link.style.display = 'none';
       
       // Add to DOM, click, and remove
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // Also open in new tab as fallback
-      window.open(result.downloadUrl, '_blank');
+    }
+  };
+
+  const handleDirectDownload = () => {
+    if (result?.downloadUrl) {
+      // Direct download using fetch
+      fetch(result.downloadUrl)
+        .then(response => response.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `tiktok_sound_${Date.now()}.mp3`;
+          link.style.display = 'none';
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Clean up
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Download failed:', error);
+          // Fallback to direct link
+          window.open(result.downloadUrl, '_blank');
+        });
     }
   };
 
@@ -167,19 +191,25 @@ function App() {
                   </div>
                   <div className="space-y-2">
                     <button
-                      onClick={handleDownload}
+                      onClick={handleDirectDownload}
                       className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
                     >
-                      Download MP3
+                      📥 Download MP3 (Direct)
+                    </button>
+                    <button
+                      onClick={handleDownload}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                    >
+                      🔗 Download MP3 (Link)
                     </button>
                     <a
                       href={result.downloadUrl}
                       download={`tiktok_sound_${Date.now()}.mp3`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-center"
+                      className="block w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-center"
                     >
-                      Open Download Link
+                      🌐 Open Download Link
                     </a>
                   </div>
                 </div>
@@ -219,3 +249,4 @@ function App() {
 }
 
 export default App;
+
